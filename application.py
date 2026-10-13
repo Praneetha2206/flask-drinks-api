@@ -12,13 +12,14 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL:
     app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 else:
-    data_dir = Path("/app/instance")
+    data_dir = Path(os.getenv("DATA_DIR", "instance"))
     data_dir.mkdir(parents=True, exist_ok=True)
     app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"sqlite:///{data_dir / 'data.db'}"
+        f"sqlite:///{(data_dir / 'data.db').resolve()}"
     )
 
 db = SQLAlchemy(app)
+
 
 
 class Drink(db.Model):

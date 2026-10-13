@@ -1,5 +1,6 @@
 FROM python:3.12-slim
 WORKDIR /app
+ENV DATA_DIR=/app/instance
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
