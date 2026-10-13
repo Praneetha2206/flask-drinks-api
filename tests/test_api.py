@@ -1,5 +1,7 @@
 import pytest
+
 from application import app, db
+
 
 @pytest.fixture
 def client(tmp_path):
@@ -33,7 +35,7 @@ def test_add_drink(client):
         }
     )
 
-    assert response.status_code==200
+    assert response.status_code==201
     assert response.is_json
     assert "id" in response.json
 
@@ -72,3 +74,36 @@ def test_get_nonexistent_drink(client):
     response=client.get("/drinks/9999")
 
     assert response.status_code==404
+
+def test_add_drink_without_name(client):
+    response=client.post(
+        "/drinks",
+        json={"description":"Missing name"}
+    )
+    assert response.status_code==400
+
+def test_add_drink_with_blank_name(client):
+    response=client.post(
+        "/drinks",
+        json={"name":"   "}
+    )
+    assert response.status_code==400
+
+def test_add_duplicate_drink(client):
+    payload={
+        "name":"Test Coffee",
+        "description":"First Entry"
+    }
+    first_response=client.post("/drinks", json=payload)
+    second_response=client.post("/drinks", json=payload)
+
+    assert first_response.status_code==201
+    assert second_response.status_code==409
+
+def test_add_drink_with_invalid_json(client):
+    response=client.post(
+        "/drinks",
+        data="not valid json",
+        content_type="application/json"
+    )
+    assert response.status_code==400

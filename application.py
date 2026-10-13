@@ -1,6 +1,7 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import IntegrityError
+
 app=Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 db=SQLAlchemy(app)
@@ -41,10 +42,34 @@ def get_drink(id):
 
 @app.route('/drinks', methods=['POST'])
 def add_drink():
-    drink=Drink(name=request.json['name'], description=request.json['description'])
-    db.session.add(drink)
-    db.session.commit()
-    return {'id': drink.id}
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return {"error": "Request body must be a JSON object"}, 400
+
+    name = data.get('name')
+    description = data.get('description')
+
+    if not isinstance(name, str) or not name.strip():
+        return {"error": "A non-empty name is required"}, 400
+
+    if description is not None and not isinstance(description, str):
+        return {"error": "Description must be a string"}, 400
+
+    drink = Drink(
+        name=name.strip(),
+        description=description
+    )
+
+    try:
+        db.session.add(drink)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return {"error": "Could not create drink; the name may already exist"}, 409
+
+    return {'id': drink.id}, 201
+
 
 @app.route('/drinks/<id>', methods=['DELETE'])
 def delete_drink(id):
