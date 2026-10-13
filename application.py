@@ -2,9 +2,24 @@ from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 
-app=Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
-db=SQLAlchemy(app)
+import os
+from pathlib import Path
+
+app = Flask(__name__)
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+else:
+    data_dir = Path("/app/instance")
+    data_dir.mkdir(parents=True, exist_ok=True)
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        f"sqlite:///{data_dir / 'data.db'}"
+    )
+
+db = SQLAlchemy(app)
+
 
 class Drink(db.Model):
     id=db.Column(db.Integer, primary_key=True)
