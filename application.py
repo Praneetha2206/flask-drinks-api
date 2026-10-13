@@ -33,7 +33,10 @@ def get_drinks():
 
 @app.route('/drinks/<id>')
 def get_drink(id):
-    drink=Drink.query.get_or_404(id)
+    drink=db.session.get(Drink, id)
+    if drink is None:
+        from flask import abort
+        abort(404)
     return {"name": drink.name, "description":drink.description}
 
 @app.route('/drinks', methods=['POST'])
@@ -45,7 +48,7 @@ def add_drink():
 
 @app.route('/drinks/<id>', methods=['DELETE'])
 def delete_drink(id):
-    drink=Drink.query.get(id)
+    drink=db.session.get(Drink, id)
     if drink is None:
         return {"error":"not found"}
     db.session.delete(drink)
@@ -55,3 +58,4 @@ if __name__=="__main__":
     with app.app_context():
         db.create_all()
     app.run(host="0.0.0.0", port=5000, debug=False)
+
