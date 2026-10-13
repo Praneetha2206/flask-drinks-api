@@ -1,9 +1,9 @@
+import os
+from pathlib import Path
+
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
-
-import os
-from pathlib import Path
 
 app = Flask(__name__)
 
