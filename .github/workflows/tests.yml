@@ -26,3 +26,7 @@ jobs:
 
       - name: Run tests
         run: python -m pytest -v
+
+
+      - name: Run Ruff linting
+        run: python -m ruff check application.py tests/
